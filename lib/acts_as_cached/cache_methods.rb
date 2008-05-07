@@ -77,7 +77,8 @@ module ActsAsCached
     def set_cache(cache_id, value, ttl = nil)
       returning(value) do |v|
         v = @@nil_sentinel if v.nil?
-        cache_store(:set, cache_key(cache_id), v, ttl || cache_config[:ttl] || 1500)
+        entry_ttl = check_valid_ttl(ttl || cache_config[:ttl] || 1500)
+        cache_store(:set, cache_key(cache_id), v, entry_ttl)
       end
     end
 
@@ -217,6 +218,11 @@ module ActsAsCached
       lazy_load ||= Hash.new { |hash, hash_key| hash[hash_key] = true; false }
       if error.to_s[/undefined class|referred/] && !lazy_load[error.to_s.split.last.constantize] then retry
       else raise error end
+    end
+    
+    def check_valid_ttl(ttl)
+      raise InvalidTtl if ttl > 30.days
+      ttl
     end
   end
 

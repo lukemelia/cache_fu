@@ -48,4 +48,5 @@ module ActsAsCached
   class CacheException < StandardError; end
   class NoCacheStore   < CacheException; end
   class NoGetMulti     < CacheException; end
+  class InvalidTtl     < CacheException; end
 end

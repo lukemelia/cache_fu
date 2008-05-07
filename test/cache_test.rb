@@ -268,6 +268,13 @@ context "A Ruby object acting as cached" do
     Story.expects(:set_cache).with(1, @story, ttl)
     @story.set_cache(ttl)
   end
+  
+  # TTL values greater than the number of seconds in 30 days are considered real Unix time rather than an offset.
+  # We raise an error in that situation as it is not the expected behavior.
+  # See in "Expiration times" in http://code.sixapart.com/svn/memcached/trunk/server/doc/protocol.txt
+  specify "should not be able to set a ttl greater than 30 days" do
+    proc { Story.set_cache(1, @story, 30.days + 1) }.should.raise(ActsAsCached::InvalidTtl)
+  end
 
   specify "should be able to cache arbitrary instance methods using caches" do
     Story.cache_store.expects(:get).returns(nil)
